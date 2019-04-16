@@ -74,20 +74,30 @@ def render_day(weekday, total_attendance, missing_attendance, total_timesheet):
         window.addnstr(row + bar_interval / 2, weekday * (bar_width + bar_interval) + bar_interval,
             "░" + line, bar_width + 2, color)
 
-    timesheet_row = int(math.ceil(total_attendance * bar_row_per_hour))
-    window.addnstr(
-        timesheet_row + bar_interval / 2,
-        weekday * (bar_width + bar_interval) + bar_interval,
-        "░" + ("rem. TS: %s      " % to_minutes(total_timesheet - total_attendance)).encode('utf8'),
-        bar_width + 2,
-        curses.color_pair(2))
+    if total_timesheet > 0:
+        row = int(math.ceil(total_timesheet * bar_row_per_hour))
+        window.addnstr(
+            row + bar_interval / 2,
+            weekday * (bar_width + bar_interval) + bar_interval,
+            "░" + ("total TS: %s      " % to_minutes(total_timesheet)).encode('utf8'),
+            bar_width + 2,
+            curses.color_pair(3))
+
+    if total_attendance - total_timesheet > 0.03:
+        row = int(math.ceil(total_attendance * bar_row_per_hour))
+        window.addnstr(
+            row + bar_interval / 2,
+            weekday * (bar_width + bar_interval) + bar_interval,
+            "░" + ("missing TS: %s      " % to_minutes(total_attendance - total_timesheet)).encode('utf8'),
+            bar_width + 2,
+            curses.color_pair(2))
 
     if missing_attendance > 0:
-        rem_row = int(math.ceil(expected_attendance * bar_row_per_hour))
+        row = int(math.ceil(expected_attendance * bar_row_per_hour))
         window.addnstr(
-            rem_row + bar_interval / 2,
+            row + bar_interval / 2,
             weekday * (bar_width + bar_interval) + bar_interval,
-            "░" + ("rem. att: %s      " % to_minutes(-missing_attendance)).encode('utf8'),
+            "░" + ("missing att: %s      " % to_minutes(missing_attendance)).encode('utf8'),
             bar_width + 2,
             curses.color_pair(1))
 
@@ -127,4 +137,4 @@ while True:
         render_day(day, total_attendance, todo - total_attendance_week, total_timesheet)
         window.refresh()
 
-    sleep(180)
+    sleep(120)
